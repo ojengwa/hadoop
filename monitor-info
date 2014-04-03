@@ -1,0 +1,162 @@
+--------------------------------------
+all URLs you need to request are below
+--------------------------------------
+http://114.212.81.5:50070/monitor?class=namenode&key=version
+http://114.212.81.5:50070/monitor?class=namenode&key=capacity
+http://114.212.81.5:50070/monitor?class=namenode&key=status
+http://114.212.81.5:50070/monitor?class=namenode&key=datanodes
+
+http://114.212.81.5:50070/monitor?class=&key=datanode&storageID=...&key=version
+http://114.212.81.5:50070/monitor?class=&key=datanode&storageID=...&key=capacity
+http://114.212.81.5:50070/monitor?class=&key=datanode&storageID=...&key=status
+http://114.212.81.5:50070/monitor?class=&key=datanode&storageID=...&key=storage
+
+http://114.212.81.5:50070/monitor?class=directory&path=...&key=name
+http://114.212.81.5:50070/monitor?class=directory&path=...&key=time
+http://114.212.81.5:50070/monitor?class=directory&path=...&key=perm
+http://114.212.81.5:50070/monitor?class=directory&path=...&key=storage
+http://114.212.81.5:50070/monitor?class=directory&path=...&key=children
+
+http://114.212.81.5:50070/monitor?class=&key=file&path=...&key=name
+http://114.212.81.5:50070/monitor?class=&key=file&path=...&key=time
+http://114.212.81.5:50070/monitor?class=&key=file&path=...&key=perm
+http://114.212.81.5:50070/monitor?class=&key=file&path=...&key=storage
+http://114.212.81.5:50070/monitor?class=&key=file&path=...&key=matrix
+http://114.212.81.5:50070/monitor?class=&key=file&path=...&key=blocks
+
+http://114.212.81.5:50070/monitor?class=block&path=...&blockid=...&key=name
+http://114.212.81.5:50070/monitor?class=block&path=...&blockid=...&key=size
+http://114.212.81.5:50070/monitor?class=block&path=...&blockid=...&key=replicas
+
+http://114.212.81.5:50070/monitor?class=log&key=namenode
+http://114.212.81.5:50070/monitor?class=log&key=datanode&storageid=...
+
+http://114.212.81.5:50070/monitor?class=conf&key=namenode
+http://114.212.81.5:50070/monitor?class=conf&key=datanode&storageid=...
+
+
+
+
+-----------
+in details:
+-----------
+
+// status of namenode
+class	key		-> returns(json format)
+-----  -----   -------------------------
+namenode
+	version
+		-> [{"name":"STRING", "role":"STRING", 
+			"version":"STRING", "startTime":"DATE"}]
+	capacity
+		-> [{"capacityTotal":"LONG", "capacityUsed":"LONG", 
+				"capacityRemaining":"LONG"}]
+	status
+		-> [{"totalLoad":"INT", "numFiles":"LONG"}]
+	datanodes
+		-> [{"storageID":"STRING"}, {"storageID":"STRING"}, ...]
+e.g.
+	http://114.212.81.5:50070/monitor?class=namenode&key=version
+		-> returns the version information of namenode
+	http://114.212.81.5:50070/monitor?class=namenode&key=datanodes
+		-> returns a list of datanodes(identified by storage ID)
+
+
+// status of datanode
+class	key		-> returns(json format)
+-----  -----   -------------------------
+datanode(identified by storage ID)
+	version
+		-> [{"name":"STRING", "isAlive":"boolean", 
+				"lastUpdate":"DATE", "location":"STRING"}]
+	capacity
+		-> [{"capacity":"LONG", "dfsUsed":"LONG", 
+				"nondfsUsed":"LONG", "remaining":"LONG"}]
+	status
+		-> [{"cpuUsed":"DOUBLE", "memUsed":"DOUBLE", 
+				"ioUsed":"DOUBLE", "netUsed":"DOUBLE", 
+				"xceiverCount":"INT"}]
+	storage
+		-> [{"numBlocks":"INT", "numReplBlocks":"INT", 
+				"numRecovBlocks":"INT", "numInvalBlocks":"INT"}]
+e.g.(use storageID to identify which datanode)
+	http://114.212.81.5:50070/monitor?class=datanode&storageID=...&key=capacity
+	http://114.212.81.5:50070/monitor?class=datanode&storageID=...&key=storage
+
+
+// status of filesystem/namespace
+// 为了表达清晰，作以下定义：
+//	使用directory/dir表示目录，file表示普通文件，即非目录
+//directory
+class	key		-> returns(json format)
+-----  -----   -------------------------
+directory(identify by filename, full path)
+	name
+		-> [{"localName":"STRING", "parent":"STRING"}]
+	time
+		-> [{"mTime":"LONG", "aTime":"LONG"}]
+	perm
+		-> [{"permission":"STRING", "userName":"STRING", "groupName":"STRING"}]
+	storage
+		-> ["nsQuota":"LONG", "nsCount":"LONG", "dsQuota":"LONG", "diskspace":"LONG"]
+	children
+		-> [{"filePath":"STRING"}, {"filePath":"STRING"}, ...]
+e.g.
+	http://114.212.81.5:50070/monitor?class=directory&path=/&key=children
+		-> returns a list of files and sub-dirs that contained by root-dir.
+
+
+//file(i.e. non dir)
+class	key		-> returns(json format)
+-----  -----   -------------------------
+file(identify by filename, full path)
+	name
+		-> [{"localName":"STRING", "parent":"STRING"}]
+	time
+		-> [{"mTime":"LONG", "aTime":"LONG"}]
+	perm
+		-> [{"permission":"STRING", "userName":"STRING", "groupName":"STRING"}]
+	storage
+		-> [{"fileSize":"LONG", "numBlocks":"LONG"}]
+	matrix
+		-> [{"matrixRow":"BYTE", "matrixColumn":"BYTE", "codingMatrix":"BYTE[][]"}]
+	blocks
+		-> [{"blockID":"LONG"}, {"blockID":"LONG"}, ...]
+e.g.
+	http://114.212.81.5:50070/monitor?class=file&path=/user/hadoop/input/8MB&key=matrix
+		-> returns the coding matrix of the file(/user/hadoop/input/8MB)
+
+
+//block
+class	key		-> returns(json format)
+-----  -----   -------------------------
+block(identify by filename and blockID)
+	name
+		-> [{"blockID":"LONG", "blockName":"STRING", "generationStamp":"LONG"}]
+	size
+		-> [{"numBytes":"LONG"}]
+	replicas
+		-> [{"datanode":"storageID"}, {"datanode":"storageID"}, ...]
+e.g.
+	http://114.212.81.5:50070/monitor?class=block&path=/user/hadoop/input/8MB
+			&blockid=...&key=size
+		-> returns the size of file(/user/hadoop/input/8MB)'s block 
+			that specified by blockid
+
+
+//log
+http://114.212.81.5:50070/monitor?class=log&key=namenode
+	-> [{"logLink":"STRING"}, {"logLink":"STRING"}, ...]
+	(returns a list of links which is the href link of namenode's log files)
+http://114.212.81.5:50070/monitor?class=log&key=datanode&storageID=...
+	-> [{"logLink":"STRING"}, {"logLink":"STRING"}, ...]
+	(returns a list of links which is the href link of datanode's log files)
+
+
+//conf
+http://114.212.81.5:50070/monitor?class=conf&key=namenode
+	-> [{"confLink":"STRING"}, {"confLink":"STRING"}, ...]
+	(returns a list of links which is the href link of namenode's conf files)
+http://114.212.81.5:50070/monitor?class=conf&key=datanode&storageID=...
+	-> [{"confLink":"STRING"}, {"confLink":"STRING"}, ...]
+	(returns a list of links which is the href link of datanode's conf files)

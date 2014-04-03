@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+    <head>
+    <title>Twitter Bootstrap Tutorial - Cumulus</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-
+    bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
+    <style type='text/css'>
+      body {
+        background-color:  #CCC;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" >
+        <h1>Cumulus</h1>
+        <div class='navbar navbar-inverse'>
+            <div class='nav-collapse' style="height: auto;">
+                <ul class="nav">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li><a href="#">Page One</a></li>
+                    <li><a href="#">Page Two</a></li>
+                </ul>
+            </div>
+        </div>  
+    </div>
+
+  </body>
+</html> 
